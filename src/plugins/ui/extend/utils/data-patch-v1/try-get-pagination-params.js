@@ -34,7 +34,5 @@ export default data => {
 
 	getDataByImportance(data, result, 'total')
 
-	// console.log('pageParams', result)
-
 	return result
 }

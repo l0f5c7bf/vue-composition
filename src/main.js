@@ -6,7 +6,8 @@ import extend from './plugins/ui/extend'
 import axios from './plugins/axios-adapter/utils/install'
 import 'element-ui/lib/theme-chalk/index.css'
 import Element from 'element-ui'
-
+import VueCompositionApi from '@vue/composition-api'
+Vue.use(VueCompositionApi)
 Vue.use(Element)
 Vue.config.productionTip = false
 

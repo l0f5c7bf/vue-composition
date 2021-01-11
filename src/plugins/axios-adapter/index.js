@@ -12,8 +12,6 @@ class Axios extends AxiosAdapter {
   }
 }
 
-console.log(process.env)
-
 const api = new Axios({
   baseURL: process.env.VUE_APP_API_BASE_URL
 })

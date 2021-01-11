@@ -33,19 +33,19 @@ function getArrayFromJSON(json, result, basePath = '') {
 
 	for (i = 0, l = keys.length; i < l; i++) {
 		key = keys[i]
-		if (Array.isArray(json[key])) {
+		if (Array.Array.isArray(json[key])) {
 			addMatchedPath(result, key, basePath)
 		}
 	}
 
 	Object.keys(json).forEach(k => {
 		const v = json[k]
-		if (isArray(v)) {
+		if (Array.isArray(v)) {
 			addMatchedPath(result, k, basePath)
 			tmpArrayPath.push(k)
 			tmpArray.push(v)
 		}
-		if (isObject(v)) {
+		if (Object.prototype.toString.call(v) === '[object Object]') {
 			tmpJSONPath.push(k)
 			tmpJSON.push(v)
 		}
@@ -73,13 +73,6 @@ function getArrayFromJSON(json, result, basePath = '') {
 }
 
 
-import {
-	isArray,
-	isFunction,
-	isObject,
-	isString
-} from '../get-type'
-
 export default data => {
 	const result = {
 		data: [],
@@ -87,28 +80,15 @@ export default data => {
 		path: '',
 		error: false
 	}
-	if (isArray(data)) {
+
+	if (Array.isArray(data)) {
 		result.data = data
 		return result
 	}
-	if (isFunction(data)) {
-		data = data()
-	}
-	if (isString(data)) {
-		try {
-			data = JSON.parse(data)
-		} catch {
-			result.error = true
-			return result
-		}
-	}
-	if (isObject(data)) {
-		getArrayFromJSON(data, result)
-	}
+
+	getArrayFromJSON(data, result)
 
 	getDataByImportance(data, result, 'data')
-
-	// console.log('onlyArray', result)
 
 	return result
 }

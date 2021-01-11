@@ -48,7 +48,9 @@ export default {
     async change(params) {
       this.tableIsLoading = true
       try {
-        const res = await this.request(params)
+        const res = await this.data(params)
+
+        console.log(111,res);
         this.tableData = res.data
         this.total = res.total
         this.tableIsLoading = false
@@ -65,20 +67,14 @@ export default {
       }
       this.change({
         ...this.params,
+        ...this.otherParams,
         currentPage: this.currentPage,
         pageSize: this.pageSize,
       })
     },
-    updateTable(fn) {
-      console.log(333,fn)
-      // const mergeParams = fn({
-      //   ...this.params,
-      //   currentPage: this.currentPage,
-      //   pageSize: this.pageSize,
-      // })
-      // this.change(mergeParams)
-      console.log(24);
-      return 1
+    otherParamsChange(params) {
+      this.otherParams = params
+      this.mergeParams(true)
     },
     sizeChange(pageSize) {
       this.pageSize = pageSize
@@ -95,11 +91,10 @@ export default {
     },
   },
   created() {
-    console.log(11,this.uid)
-    events.$on(`table.${this.uid}.update`, this.updateTable)
+    events.$on(`table.${this.uid}.update`, this.otherParamsChange)
   },
   beforeDestroy() {
-    events.$off(`table.${this.uid}.update`, this.updateTable)
+    events.$off(`table.${this.uid}.update`, this.otherParamsChange)
   },
 }
 </script>

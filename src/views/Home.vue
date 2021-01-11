@@ -1,121 +1,87 @@
 <template>
-  <div>
-    <s-form :model="form" size="mini" inline>
-      <s-form-item label="手机号" prop="mobile">
-        <s-input v-model="form.mobile"></s-input>
-      </s-form-item>
-      <s-form-item>
-        <s-button type="primary" run="form.search">查询</s-button>
-      </s-form-item>
-      <s-form-item>
-        <s-button type="primary" :disabled="types.length === 0" @click="add">添加</s-button>
-      </s-form-item>
-    </s-form>
-
-    <s-s-table :data="api" :cols="cols"></s-s-table>
-    <!-- 弹窗 -->
-    <s-dialog :component="require('./dialog/add-phone-black-list.vue').default" width="400px"></s-dialog>
-  </div>
+  <a-table
+    :columns="columns"
+    :row-key="record => record.login.uuid"
+    :data-source="data"
+    :pagination="pagination"
+    :loading="loading"
+    @change="handleTableChange"
+  >
+    <template slot="name" slot-scope="name"> {{ name.first }} {{ name.last }} </template>
+  </a-table>
 </template>
-
 <script>
-export default {
-  created() {
-   setTimeout(()=>{ console.log(this.$ui.updateTable());},3333)
-    // console.log(this.$ui.form)
-    this.$api('setting.securityIntentionMobileBlacklistGetBlacklistTypes')
-      .then(({ data }) => {
-        this.types = data.list
-      })
-      .catch(() => {
-        this.types = [
-          { name: '友商', value: '1' },
-          { name: '骚扰电话', value: '2' },
-          { name: '免打扰', value: '3' },
-          { name: '中企员工', value: '4' },
-        ]
-      })
+import request from 'request';
+const columns = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    sorter: true,
+    width: '20%',
+    scopedSlots: { customRender: 'name' },
   },
+  {
+    title: 'Gender',
+    dataIndex: 'gender',
+    filters: [
+      { text: 'Male', value: 'male' },
+      { text: 'Female', value: 'female' },
+    ],
+    width: '20%',
+  },
+  {
+    title: 'Email',
+    dataIndex: 'email',
+  },
+];
+
+export default {
   data() {
     return {
-      types: [],
-      form: {
-        mobile: '',
-      },
-      cols: [
-        {
-          label: '手机号',
-          prop: 'mobile',
-        },
-        {
-          label: '类型',
-          prop: ({ row }) => {
-            try {
-              return this.types.find((v) => v.value == row.blacklistType).name
-              // eslint-disable-next-line no-empty
-            } catch (error) {}
-          },
-        },
-        {
-          label: '',
-          prop: ({ row }) => {
-            return (
-              <div>
-                <s-button
-                  confirm="确定要删除么"
-                  type="text"
-                  onclick={() => {
-                    this.del(row)
-                  }}
-                >
-                  删除
-                </s-button>
-              </div>
-            )
-          },
-        },
-      ],
-    }
+      data: [],
+      pagination: {},
+      loading: false,
+      columns,
+    };
   },
-
+  mounted() {
+    this.fetch();
+  },
   methods: {
-    api(params) {
-      return this.$api('setting.phoneBlackList', params)
+    handleTableChange(pagination, filters, sorter) {
+      console.log(pagination);
+      const pager = { ...this.pagination };
+      pager.current = pagination.current;
+      this.pagination = pager;
+      this.fetch({
+        results: pagination.pageSize,
+        page: pagination.current,
+        sortField: sorter.field,
+        sortOrder: sorter.order,
+        ...filters,
+      });
     },
-    // getType(row){
-    // 	if(row.blacklistType==1){
-    // 		return '友商'
-    // 	}else if(row.blacklistType==2){
-    // 		return '骚扰电话'
-    // 	}else if (row.blacklistType==3){
-    // 		return '免打扰'
-    // 	}else if (row.blacklistType==4){
-    // 		return '中企员工'
-    // 	}
-    // 	else{
-    // 		return '-'
-    // 	}
-    // 	return '-'
-    // },
-    add() {
-      this.$store.commit('ui.dialog.open', { types: this.types })
-    },
-    del(item) {
-      this.$api('setting.delPhoneBlackList', { id: item.id }).then(
-        ({ status, msg }) => {
-          this.$message({
-            type: 'success',
-            message: msg,
-          })
-          if (status == 101) {
-            this.$store.commit('ui.update.table')
-          }
-        }
-      )
+    fetch(params = {}) {
+      console.log('params:', params);
+      this.loading = true;
+      request({
+        url: 'https://randomuser.me/api',
+        method: 'get',
+        data: {
+          results: 10,
+          ...params,
+        },
+        type: 'json',
+      }).then(data => {
+        const pagination = { ...this.pagination };
+        // Read total count from server
+        // pagination.total = data.totalCount;
+        pagination.total = 200;
+        this.loading = false;
+        this.data = data.results;
+        this.pagination = pagination;
+      });
     },
   },
-}
+};
 </script>
-
-<style>
-</style>
